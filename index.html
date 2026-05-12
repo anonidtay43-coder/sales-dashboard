@@ -69,16 +69,20 @@
 
   /* ── KPI Cards ── */
   .kpi-grid {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: .8rem;
+  margin-bottom: 1rem;
 }
 
 .kpi-card {
-  min-width: 220px;
-  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+/* ใบแรกเต็มแถว */
+.kpi-card:first-child {
+  grid-column: 1 / -1;
 }
   .kpi-card {
     background: var(--white); border-radius: 12px;
