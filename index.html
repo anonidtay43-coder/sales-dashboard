@@ -223,7 +223,7 @@
 
   .kpi-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: .8rem;
   margin-bottom: 1rem;
 }
@@ -231,6 +231,11 @@
 .kpi-card {
   width: 100%;
   min-width: 0;
+}
+
+/* กล่องแรกเต็มแถว */
+.kpi-card:nth-child(1) {
+  grid-column: 1 / -1;
 }
 
   .chart-wrap {
