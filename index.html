@@ -251,37 +251,37 @@
     <div class="kpi-card" style="border-color:#B91C1C;">
       <div class="kpi-label">จำนวนลูกค้าที่จะตั้งเป้าทั้งหมด</div>
       <div class="kpi-value" style="color:#B91C1C;" id="k-target-cust">913</div>
-      <div class="kpi-unit">407 ราย ≥100K | 505 ราย 50K–100K</div>
+      <div class="kpi-unit" id="k-target-cust-sub">407 ราย ≥100K | 505 ราย 50K–100K</div>
     </div>
     <div class="kpi-card blue">
       <div class="kpi-label">รวมเป้าที่ตั้ง (ยอดขายสูงสุด)</div>
-      <div class="kpi-value blue" id="k-target-max">109.6M</div>
+      <div class="kpi-value blue" id="k-target-max">76,260,000</div>
       <div class="kpi-unit">บาท</div>
     </div>
     <div class="kpi-card blue">
       <div class="kpi-label">รวมค่าคอมที่จะจ่าย (ยอดขายสูงสุด)</div>
-      <div class="kpi-value blue" id="k-com-max">101,150</div>
-      <div class="kpi-unit">บาท</div>
+      <div class="kpi-value blue" id="k-com-max">75,800</div>
+      <div class="kpi-unit" id="k-com-max-pct">= 0.0994% ของเป้า</div>
     </div>
     <div class="kpi-card blue">
       <div class="kpi-label">รวมเป้าที่ตั้ง (ยอดขายขั้นต่ำ)</div>
-      <div class="kpi-value blue" id="k-target-min">19.7M</div>
+      <div class="kpi-value blue" id="k-target-min">19,670,000</div>
       <div class="kpi-unit">บาท</div>
     </div>
     <div class="kpi-card blue">
       <div class="kpi-label">รวมค่าคอม (ยอดขายขั้นต่ำ)</div>
       <div class="kpi-value blue" id="k-com-min">15,700</div>
-      <div class="kpi-unit">บาท</div>
+      <div class="kpi-unit" id="k-com-min-pct">= 0.0798% ของเป้า</div>
     </div>
     <div class="kpi-card teal">
       <div class="kpi-label">รวมเป้าที่ตั้ง (ลูกค้ารายเล็ก)</div>
-      <div class="kpi-value teal" id="k-target-small">33.4M</div>
+      <div class="kpi-value teal" id="k-target-small">33,370,000</div>
       <div class="kpi-unit">บาท</div>
     </div>
     <div class="kpi-card teal">
       <div class="kpi-label">รวมค่าคอมที่จะจ่าย (ลูกค้ารายเล็ก)</div>
       <div class="kpi-value teal" id="k-com-small">25,250</div>
-      <div class="kpi-unit">บาท</div>
+      <div class="kpi-unit" id="k-com-small-pct">= 0.0757% ของเป้า</div>
     </div>
   </div>
 
@@ -309,7 +309,7 @@
       <div class="table-wrap">
         <table id="branch-table">
           <thead>
-            <tr>
+            <tr id="branch-thead-row">
               <th>สาขา</th>
               <th>เซล</th>
               <th>ลูกค้า</th>
@@ -334,7 +334,7 @@ const RAW = [
   {b:5,  n:"จอย โต5",     tc:157, tg:60, lo:29, lmn:1170000, lcn:1000, lmx:4880000, lcx:5050, hi:31, hmx:2140000, hcx:1550},
   {b:5,  n:"เจน โต5",     tc:158, tg:43, lo:18, lmn:830000,  lcn:600,  lmx:3160000, lcx:2900, hi:25, hmx:1660000, hcx:1250},
   {b:5,  n:"บี โต5",      tc:64,  tg:21, lo:7,  lmn:380000,  lcn:200,  lmx:1150000, lcx:1100, hi:14, hmx:870000,  hcx:700},
-  {b:5,  n:"มิ้น โต5",    tc:1,   tg:1,  lo:0,  lmn:0,       lcn:0,    lmx:0,       lcx:0,    hi:1,  hmx:0,       hcx:0},
+  {b:5,  n:"มิ้น โต5",    tc:1,   tg:1,  lo:0,  lmn:0,       lcn:0,    lmx:0,       lcx:0,    hi:0,  hmx:0,       hcx:0},
   {b:9,  n:"นุ่น โต9",    tc:62,  tg:24, lo:8,  lmn:0,       lcn:0,    lmx:1000000, lcx:800,  hi:16, hmx:1200000, hcx:800},
   {b:9,  n:"บุ๋ม โต9",    tc:56,  tg:30, lo:17, lmn:1770000, lcn:1500, lmx:3950000, lcx:4400, hi:13, hmx:870000,  hcx:650},
   {b:9,  n:"เพน โต9",     tc:58,  tg:36, lo:22, lmn:520000,  lcn:500,  lmx:3860000, lcx:3500, hi:14, hmx:1000000, hcx:700},
@@ -387,25 +387,53 @@ function filterBranch(b, el) {
 }
 
 function updateKPI(data) {
+  const isAll = currentBranch === 'all';
+
   document.getElementById('k-sellers').textContent = data.length;
   document.getElementById('k-cust').textContent = fmtFull(data.reduce((s,r)=>s+r.tc,0));
-  document.getElementById('k-target-cust').textContent = '913';
-  document.getElementById('k-target-max').textContent = fmt(data.reduce((s,r)=>s+r.lmx+r.hmx,0));
-  document.getElementById('k-target-min').textContent = fmt(data.reduce((s,r)=>s+r.lmn+(r.hmn||0),0));
-  document.getElementById('k-target-small').textContent = fmt(data.reduce((s,r)=>s+r.hmx,0));
-  document.getElementById('k-com-max').textContent = fmtFull(data.reduce((s,r)=>s+r.lcx+r.hcx,0));
-  document.getElementById('k-com-min').textContent = fmtFull(data.reduce((s,r)=>s+r.lcn+(r.hcn||0),0));
+
+  // จำนวนลูกค้าที่ตั้งเป้า — lo = ≥100K, hi = 50K–100K
+  const totalLo = data.reduce((s,r)=>s+r.lo,0);
+  const totalHi = data.reduce((s,r)=>s+r.hi,0);
+  document.getElementById('k-target-cust').textContent = fmtFull(totalLo + totalHi);
+  document.getElementById('k-target-cust-sub').textContent =
+    `${fmtFull(totalLo)} ราย ≥100K | ${fmtFull(totalHi)} ราย 50K–100K`;
+
+  // เป้าขายสูงสุด = lmx เท่านั้น (ไม่รวม hmx)
+  const tmax  = data.reduce((s,r)=>s+r.lmx,0);
+  const comMax = data.reduce((s,r)=>s+r.lcx,0);
+  document.getElementById('k-target-max').textContent = fmtFull(tmax);
+  document.getElementById('k-com-max').textContent = fmtFull(comMax);
+  document.getElementById('k-com-max-pct').textContent =
+    tmax > 0 ? `= ${(comMax/tmax*100).toFixed(4)}% ของเป้า` : '';
+
+  // เป้าขายขั้นต่ำ = lmn
+  const tmin  = data.reduce((s,r)=>s+r.lmn,0);
+  const comMin = data.reduce((s,r)=>s+r.lcn,0);
+  document.getElementById('k-target-min').textContent = fmtFull(tmin);
+  document.getElementById('k-com-min').textContent = fmtFull(comMin);
+  document.getElementById('k-com-min-pct').textContent =
+    tmin > 0 ? `= ${(comMin/tmin*100).toFixed(4)}% ของเป้า` : '';
+
+  // ลูกค้ารายเล็ก = hmx
+  const tsmall  = data.reduce((s,r)=>s+r.hmx,0);
+  const comSmall = data.reduce((s,r)=>s+r.hcx,0);
+  document.getElementById('k-target-small').textContent = fmtFull(tsmall);
+  document.getElementById('k-com-small').textContent = fmtFull(comSmall);
+  document.getElementById('k-com-small-pct').textContent =
+    tsmall > 0 ? `= ${(comSmall/tsmall*100).toFixed(4)}% ของเป้า` : '';
 }
 
 function getBranchSummary(data) {
   const bmap = {};
   data.forEach(r => {
-    if (!bmap[r.b]) bmap[r.b] = {sellers:0,tc:0,tg:0,comMax:0,comMin:0,comSmall:0};
+    if (!bmap[r.b]) bmap[r.b] = {sellers:0,tc:0,tg:0,comMax:0,comLcx:0,comMin:0,comSmall:0};
     bmap[r.b].sellers++;
     bmap[r.b].tc += r.tc;
     bmap[r.b].tg += r.tg;
-    bmap[r.b].comMax += r.lcx + r.hcx;
-    bmap[r.b].comMin += r.lcn + (r.hcn||0);
+    bmap[r.b].comMax   += r.lcx + r.hcx;
+    bmap[r.b].comLcx   += r.lcx;
+    bmap[r.b].comMin   += r.lcn + (r.hcn||0);
     bmap[r.b].comSmall += r.hcx;
   });
   return bmap;
@@ -463,11 +491,11 @@ function updateDonut(data) {
 
 function updateBranchCom(data) {
   const bmap = getBranchSummary(data);
-  const labels = Object.keys(bmap).map(b => `สาขา ${b}`);
-  const maxVals   = Object.keys(bmap).map(b => bmap[b].comMax);
+  const labels    = Object.keys(bmap).map(b => `สาขา ${b}`);
+  const maxVals   = Object.keys(bmap).map(b => bmap[b].comLcx);
   const minVals   = Object.keys(bmap).map(b => bmap[b].comMin);
   const smallVals = Object.keys(bmap).map(b => bmap[b].comSmall);
-  const colors = Object.keys(bmap).map(b => BRANCH_COLORS[b]);
+  const colors    = Object.keys(bmap).map(b => BRANCH_COLORS[b]);
 
   if (charts.branchCom) charts.branchCom.destroy();
   charts.branchCom = new Chart(document.getElementById('branchComChart'), {
@@ -553,31 +581,77 @@ function updateSellerChart(data) {
 }
 
 function updateBranchTable(data) {
-  const bmap = getBranchSummary(data);
-  document.getElementById('branch-tbody').innerHTML = Object.keys(bmap).map(b => `
-    <tr>
-      <td><span class="branch-pill" style="background:${BRANCH_LIGHT[b]};color:${BRANCH_COLORS[b]}">สาขา ${b}</span></td>
-      <td>${bmap[b].sellers}</td>
-      <td>${fmtFull(bmap[b].tc)}</td>
-      <td>${fmtFull(bmap[b].tg)}</td>
-      <td style="color:var(--green);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(bmap[b].comMax)}</td>
-      <td style="color:var(--amber);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(bmap[b].comMin)}</td>
-      <td style="color:var(--teal);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(bmap[b].comSmall)}</td>
-    </tr>`).join('');
+  const isBranch = currentBranch !== 'all';
 
-  const totalTc   = data.reduce((s,r)=>s+r.tc,0);
-  const totalTg   = data.reduce((s,r)=>s+r.tg,0);
-  const totalCMax  = data.reduce((s,r)=>s+r.lcx+r.hcx,0);
-  const totalCMin  = data.reduce((s,r)=>s+r.lcn+(r.hcn||0),0);
+  // อัปเดต header
+  document.getElementById('branch-thead-row').innerHTML = isBranch
+    ? `<th>เซล</th>
+       <th>ลูกค้า ToCRM</th>
+       <th>≥100K (คน)</th>
+       <th>50K–100K (คน)</th>
+       <th>คอมสูงสุด</th>
+       <th>คอมขั้นต่ำ</th>
+       <th>คอมรายย่อย</th>`
+    : `<th>สาขา</th>
+       <th>เซล</th>
+       <th>ลูกค้า</th>
+       <th>เป้า (คน)</th>
+       <th>คอมมากสุด</th>
+       <th>คอมน้อยสุด</th>
+       <th>คอมลูกค้ารายย่อย</th>`;
+
+  if (isBranch) {
+    // แสดงรายเซล
+    const sorted = [...data].sort((a,b) => (b.lcx+b.hcx) - (a.lcx+a.hcx));
+    document.getElementById('branch-tbody').innerHTML = sorted.map(r => `
+      <tr>
+        <td style="font-weight:700;color:var(--navy)">${r.n}</td>
+        <td>${fmtFull(r.tc)}</td>
+        <td>${fmtFull(r.lo)}</td>
+        <td>${fmtFull(r.hi)}</td>
+        <td style="color:var(--green);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(r.lcx)}</td>
+        <td style="color:var(--amber);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(r.lcn)}</td>
+        <td style="color:var(--teal);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(r.hcx)}</td>
+      </tr>`).join('');
+  } else {
+    // แสดงรายสาขา
+    const bmap = getBranchSummary(data);
+    document.getElementById('branch-tbody').innerHTML = Object.keys(bmap).map(b => `
+      <tr>
+        <td><span class="branch-pill" style="background:${BRANCH_LIGHT[b]};color:${BRANCH_COLORS[b]}">สาขา ${b}</span></td>
+        <td>${bmap[b].sellers}</td>
+        <td>${fmtFull(bmap[b].tc)}</td>
+        <td>${fmtFull(bmap[b].tg)}</td>
+        <td style="color:var(--green);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(bmap[b].comMax)}</td>
+        <td style="color:var(--amber);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(bmap[b].comMin)}</td>
+        <td style="color:var(--teal);font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtFull(bmap[b].comSmall)}</td>
+      </tr>`).join('');
+  }
+
+  // tfoot รวม
+  const totalTc    = data.reduce((s,r)=>s+r.tc,0);
+  const totalLo    = data.reduce((s,r)=>s+r.lo,0);
+  const totalHi    = data.reduce((s,r)=>s+r.hi,0);
+  const totalTg    = data.reduce((s,r)=>s+r.tg,0);
+  const totalCMax  = data.reduce((s,r)=>s+r.lcx,0);
+  const totalCMin  = data.reduce((s,r)=>s+r.lcn,0);
   const totalCSmall = data.reduce((s,r)=>s+r.hcx,0);
-  document.getElementById('branch-tfoot').innerHTML = `
-    <td>รวมทั้งหมด</td>
-    <td>${data.length}</td>
-    <td>${fmtFull(totalTc)}</td>
-    <td>${fmtFull(totalTg)}</td>
-    <td>${fmtFull(totalCMax)}</td>
-    <td>${fmtFull(totalCMin)}</td>
-    <td>${fmtFull(totalCSmall)}</td>`;
+
+  document.getElementById('branch-tfoot').innerHTML = isBranch
+    ? `<td>รวม</td>
+       <td>${fmtFull(totalTc)}</td>
+       <td>${fmtFull(totalLo)}</td>
+       <td>${fmtFull(totalHi)}</td>
+       <td>${fmtFull(totalCMax)}</td>
+       <td>${fmtFull(totalCMin)}</td>
+       <td>${fmtFull(totalCSmall)}</td>`
+    : `<td>รวมทั้งหมด</td>
+       <td>${data.length}</td>
+       <td>${fmtFull(totalTc)}</td>
+       <td>${fmtFull(totalTg)}</td>
+       <td>${fmtFull(totalCMax)}</td>
+       <td>${fmtFull(totalCMin)}</td>
+       <td>${fmtFull(totalCSmall)}</td>`;
 }
 
 function updateAll() {
