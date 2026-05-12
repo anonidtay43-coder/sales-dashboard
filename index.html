@@ -222,15 +222,16 @@
   }
 
   .kpi-grid {
-    display: flex;
-    overflow-x: auto;
-    gap: .8rem;
-    padding-bottom: .5rem;
-  }
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .8rem;
+  margin-bottom: 1rem;
+}
 
-  .kpi-card {
-    min-width: 180px;
-  }
+.kpi-card {
+  width: 100%;
+  min-width: 0;
+}
 
   .chart-wrap {
     height: 260px;
