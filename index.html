@@ -665,5 +665,79 @@ function updateAll() {
 
 updateAll();
 </script>
+  function updateBranchCom(data) {
+
+  const bmap = getBranchSummary(data);
+
+  const labels = Object.keys(bmap).map(b => `สาขา ${b}`);
+
+  const maxVals = Object.keys(bmap).map(
+    b => bmap[b].comMax
+  );
+
+  const minVals = Object.keys(bmap).map(
+    b => bmap[b].comMin
+  );
+
+  const colors = Object.keys(bmap).map(
+    b => BRANCH_COLORS[b]
+  );
+
+  if (charts.branchCom) {
+    charts.branchCom.destroy();
+  }
+
+  charts.branchCom = new Chart(
+    document.getElementById('branchComChart'),
+    {
+      type: 'bar',
+
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'ค่าคอมมากสุด',
+            data: maxVals,
+            backgroundColor: colors,
+            borderRadius: 6
+          },
+          {
+            label: 'ค่าคอมน้อยสุด',
+            data: minVals,
+            backgroundColor: colors.map(c => c + '55'),
+            borderRadius: 6
+          }
+        ]
+      },
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        plugins: {
+          legend: {
+            position: 'bottom'
+          },
+
+          tooltip: {
+            callbacks: {
+              label: ctx =>
+                `${ctx.dataset.label}: ${fmtFull(ctx.raw)} บาท`
+            }
+          }
+        },
+
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: v => fmt(v)
+            }
+          }
+        }
+      }
+    }
+  );
+}
 </body>
 </html>
