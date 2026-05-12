@@ -303,20 +303,70 @@ canvas {
   </div>
 
   <!-- KPI -->
-  <div class="kpi-grid" id="kpi-grid">
-    <div class="kpi-card navy"><div class="kpi-label">เซลทั้งหมด</div><div class="kpi-value navy" id="k-sellers">34</div><div class="kpi-unit">คน</div></div>
-    <div class="kpi-card navy"><div class="kpi-label">จำนวนลูกค้าที่ดูแลใน ToCRM</div><div class="kpi-value blue" id="k-cust">2,377</div><div class="kpi-unit">ราย</div></div>
-   <div class="kpi-card navy">
-  <div class="kpi-label">จำนวนลูกค้าที่จะตั้งเป้าทั้งหมด</div>
-  <div class="kpi-value teal" id="k-target-cust">913</div>
-  <div class="kpi-unit">407 ราย ≥100K | 505 ราย 50K–100K</div>
-</div>
-     <div class="kpi-card blue"><div class="kpi-label">รวมเป้าที่ตั้ง (ยอดขายสูงสุด)</div><div class="kpi-value purple" id="k-target-max">76.2M</div><div class="kpi-unit">บาท</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">รวมค่าคอมที่จะจ่าย (ยอดขายสูงสุด)</div><div class="kpi-value green" id="k-com-max">75,800</div><div class="kpi-unit">บาท</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">รวมเป้าที่ตั้ง (ยอดขายขั้นต่ำ)</div><div class="kpi-value purple" id="k-target-min">19.6</div><div class="kpi-unit">บาท</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">รวมค่าคอม(ยอดขายขั้นต่ำ)</div><div class="kpi-value amber" id="k-com-min">15,700</div><div class="kpi-unit">บาท</div></div>
-    <div class="kpi-card Teal"><div class="kpi-label">รวมเป้าที่ตั้ง (ลูกค้ารายเล็ก)</div><div class="kpi-value purple" id="k-target-small">33.3M</div><div class="kpi-unit">บาท</div></div>
-    <div class="kpi-card Teal"><div class="kpi-label">รวมค่าคอมที่จะจ่าย (ลูกค้ารายเล็ก)</div><div class="kpi-value green" id="k-com-small">25,250</div><div class="kpi-unit">บาท</div></div>
+<div class="kpi-grid" id="kpi-grid">
+
+  <div class="kpi-card navy">
+    <div class="kpi-label">เซลทั้งหมด</div>
+    <div class="kpi-value navy" id="k-sellers">34</div>
+    <div class="kpi-unit">คน</div>
+  </div>
+
+  <!-- สีม่วง -->
+  <div class="kpi-card purple">
+    <div class="kpi-label">จำนวนลูกค้าที่ดูแลใน ToCRM</div>
+    <div class="kpi-value purple" id="k-cust">2,377</div>
+    <div class="kpi-unit">ราย</div>
+  </div>
+
+  <!-- สีแดง -->
+  <div class="kpi-card" style="border-color:#B91C1C;">
+    <div class="kpi-label">จำนวนลูกค้าที่จะตั้งเป้าทั้งหมด</div>
+    <div class="kpi-value" style="color:#B91C1C;" id="k-target-cust">913</div>
+    <div class="kpi-unit">407 ราย ≥100K | 505 ราย 50K–100K</div>
+  </div>
+
+  <!-- สีน้ำเงิน -->
+  <div class="kpi-card blue">
+    <div class="kpi-label">รวมเป้าที่ตั้ง (ยอดขายสูงสุด)</div>
+    <div class="kpi-value blue" id="k-target-max">109.6M</div>
+    <div class="kpi-unit">บาท</div>
+  </div>
+
+  <!-- สีน้ำเงิน -->
+  <div class="kpi-card blue">
+    <div class="kpi-label">รวมค่าคอมที่จะจ่าย (ยอดขายสูงสุด)</div>
+    <div class="kpi-value blue" id="k-com-max">101,150</div>
+    <div class="kpi-unit">บาท</div>
+  </div>
+
+  <!-- สีน้ำเงิน -->
+  <div class="kpi-card blue">
+    <div class="kpi-label">รวมเป้าที่ตั้ง (ยอดขายขั้นต่ำ)</div>
+    <div class="kpi-value blue" id="k-target-min">19.7M</div>
+    <div class="kpi-unit">บาท</div>
+  </div>
+
+  <!-- สีน้ำเงิน -->
+  <div class="kpi-card blue">
+    <div class="kpi-label">รวมค่าคอม(ยอดขายขั้นต่ำ)</div>
+    <div class="kpi-value blue" id="k-com-min">15,700</div>
+    <div class="kpi-unit">บาท</div>
+  </div>
+
+  <!-- สี Teal -->
+  <div class="kpi-card teal">
+    <div class="kpi-label">รวมเป้าที่ตั้ง (ลูกค้ารายเล็ก)</div>
+    <div class="kpi-value teal" id="k-target-small">33.4M</div>
+    <div class="kpi-unit">บาท</div>
+  </div>
+
+  <!-- สี Teal -->
+  <div class="kpi-card teal">
+    <div class="kpi-label">รวมค่าคอมที่จะจ่าย (ลูกค้ารายเล็ก)</div>
+    <div class="kpi-value teal" id="k-com-small">25,250</div>
+    <div class="kpi-unit">บาท</div>
+  </div>
+
 </div>
   <!-- Row 1: Donut + Bar + Top Sellers -->
   <div class="chart-grid">
