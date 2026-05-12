@@ -1,202 +1,160 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Commission Dashboard — พ.ค.–มิ.ย. 2569</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* ====== (ใช้ CSS ของคุณเดิมได้เลย ไม่ต้องแก้) ====== */
+body{font-family:Sarabun;background:#EEF2F8;margin:0}
+.header{background:#0F1E3C;color:#fff;padding:12px}
+.main{padding:12px}
+.card{background:#fff;padding:12px;margin-bottom:10px;border-radius:10px}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+📊 SALES COMMISSION DASHBOARD
+</div>
+
+<div class="main">
+
+<div class="card">
+<canvas id="donutChart"></canvas>
+</div>
+
+<div class="card">
+<canvas id="branchComChart"></canvas>
+</div>
+
+<div class="card">
+<div id="top-sellers"></div>
+</div>
+
+<div class="card">
+<canvas id="sellerTargetChart"></canvas>
+</div>
+
+</div>
+
 <script>
-const RAW = [...]; // ❗ ใช้ของเดิมคุณได้ ไม่ต้องแก้
 
-const BRANCH_COLORS = {5:"#1D4ED8",9:"#0F766E",10:"#15803D",11:"#6D28D9",12:"#B45309",13:"#B91C1C",21:"#0F1E3C"};
-const BRANCH_LIGHT  = {5:"#DBEAFE",9:"#CCFBF1",10:"#DCFCE7",11:"#EDE9FE",12:"#FEF3C7",13:"#FEE2E2",21:"#CBD5E1"};
+/* ================= DATA (ของจริงคุณ) ================= */
+const RAW = [
+  {b:5,n:"ขวัญ",tc:89,tg:15,lmn:0,lcn:0,lmx:400000,lcx:300,hmx:740000,hcx:600,hnc:0},
+  {b:5,n:"จอย",tc:157,tg:60,lmn:1170000,lcn:1000,lmx:4880000,lcx:5050,hmx:2140000,hcx:1550},
+  {b:9,n:"นุ่น",tc:62,tg:24,lmn:0,lcn:0,lmx:1000000,lcx:800,hmx:1200000,hcx:800},
+  {b:10,n:"ต๊ะ",tc:94,tg:29,lmn:580000,lcn:500,lmx:1960000,lcx:2150,hmx:1350000,hcx:1000},
+  {b:11,n:"เจน",tc:57,tg:27,lmn:0,lcn:0,lmx:1080000,lcx:800,hmx:1250000,hcx:950},
+  {b:12,n:"ปู",tc:114,tg:58,lmn:1730000,lcn:1400,lmx:5050000,lcx:5300,hmx:2160000,hcx:1550},
+  {b:13,n:"มิ้ว",tc:31,tg:17,lmn:170000,lcn:100,lmx:1110000,lcx:900,hmx:630000,hcx:500},
+  {b:21,n:"บิ๊ก",tc:14,tg:6,lmn:160000,lcn:100,lmx:950000,lcx:800,hmx:80000,hcx:50}
+];
 
-let currentBranch = 'all';
-let charts = {};
+/* ================= CONFIG ================= */
+const C = {
+  5:"#1D4ED8",
+  9:"#0F766E",
+  10:"#15803D",
+  11:"#6D28D9",
+  12:"#B45309",
+  13:"#B91C1C",
+  21:"#0F1E3C"
+};
 
-function fmt(n) {
-  return n >= 1000000 ? (n/1000000).toFixed(1)+'M' :
-         n >= 1000 ? (n/1000).toFixed(0)+'K' :
-         n.toLocaleString('th-TH');
-}
-function fmtFull(n){ return n.toLocaleString('th-TH'); }
+let charts={};
+let current="all";
 
-function getFiltered(){
-  return currentBranch === 'all' ? RAW : RAW.filter(r => r.b === currentBranch);
-}
+const sum = (arr,fn)=>arr.reduce((a,b)=>a+fn(b),0);
 
-function filterBranch(b, el){
-  currentBranch = b;
-  document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
-  el.classList.add('active');
-  updateAll();
-}
-
-/* ───────────────── KPI ───────────────── */
-function updateKPI(data){
-  document.getElementById('k-sellers').textContent = data.length;
-  document.getElementById('k-cust').textContent =
-    fmtFull(data.reduce((s,r)=>s+r.tc,0));
-
-  const tmax = data.reduce((s,r)=>s+r.lmx+r.hmx,0);
-  const tmin = data.reduce((s,r)=>s+r.lmn+(r.hmn||0),0);
-
-  document.getElementById('k-target-max').textContent = fmt(tmax);
-  document.getElementById('k-target-min').textContent = fmt(tmin);
-  document.getElementById('k-target-small').textContent =
-    fmt(data.reduce((s,r)=>s+r.hmx,0));
-
-  document.getElementById('k-com-max').textContent =
-    fmtFull(data.reduce((s,r)=>s+r.lcx+r.hcx,0));
-
-  document.getElementById('k-com-min').textContent =
-    fmtFull(data.reduce((s,r)=>s+r.lcn+(r.hcn||0),0));
+/* ================= FILTER ================= */
+function getData(){
+  return current==="all"?RAW:RAW.filter(x=>x.b==current);
 }
 
-/* ───────────────── GROUP ───────────────── */
-function getBranchSummary(data){
-  const m = {};
-  data.forEach(r=>{
-    if(!m[r.b]) m[r.b]={sellers:0,tc:0,tg:0,comMax:0,comMin:0};
-    m[r.b].sellers++;
-    m[r.b].tc+=r.tc;
-    m[r.b].tg+=r.tg;
-    m[r.b].comMax+=r.lcx+r.hcx;
-    m[r.b].comMin+=r.lcn+(r.hcn||0);
-  });
-  return m;
-}
-
-/* ───────────────── DONUT ───────────────── */
-function updateDonut(){
-  const vals=[407,505];
-  const total=913;
+/* ================= DONUT ================= */
+function donut(){
+  const d=[407,505];
 
   if(charts.donut) charts.donut.destroy();
 
-  charts.donut = new Chart(document.getElementById('donutChart'),{
+  charts.donut=new Chart(donutChart,{
     type:'doughnut',
+    data:{datasets:[{data:d,backgroundColor:['#1D4ED8','#0F766E']}]}
+  });
+}
+
+/* ================= TOP ================= */
+function top(){
+  const d=[...getData()]
+  .sort((a,b)=>(b.lcx+b.hcx)-(a.lcx+a.hcx))
+  .slice(0,5);
+
+  document.getElementById("top-sellers").innerHTML=
+  d.map(x=>`
+    <div>🏆 ${x.n} = ${(x.lcx+x.hcx).toLocaleString()}</div>
+  `).join("");
+}
+
+/* ================= BRANCH ================= */
+function branch(){
+  const map={};
+
+  getData().forEach(x=>{
+    if(!map[x.b]) map[x.b]=0;
+    map[x.b]+=x.lcx+x.hcx;
+  });
+
+  if(charts.branch) charts.branch.destroy();
+
+  charts.branch=new Chart(branchComChart,{
+    type:'bar',
     data:{
-      labels:['>100K','50K–100K'],
+      labels:Object.keys(map).map(x=>"สาขา "+x),
       datasets:[{
-        data:vals,
-        backgroundColor:['#1D4ED8','#0F766E']
+        data:Object.values(map),
+        backgroundColor:Object.keys(map).map(x=>C[x])
       }]
-    },
-    options:{
-      cutout:'62%',
-      plugins:{legend:{display:false}}
     }
   });
 }
 
-/* ───────────────── TOP SELLER ───────────────── */
-function updateTopSellers(data){
-  const sorted=[...data].sort((a,b)=>
-    (b.lcx+b.hcx)-(a.lcx+a.hcx)
-  ).slice(0,10);
-
-  const max=sorted[0]?(sorted[0].lcx+sorted[0].hcx):1;
-
-  document.getElementById('top-sellers').innerHTML =
-    sorted.map((r,i)=>{
-      const v=r.lcx+r.hcx;
-      return `
-      <div class="seller-row">
-        <div class="seller-rank">${i+1}</div>
-        <div class="seller-name">${r.n}</div>
-        <div class="seller-bar-wrap">
-          <div class="seller-bar" style="width:${(v/max)*100}%;background:${BRANCH_COLORS[r.b]}"></div>
-        </div>
-        <div class="seller-val">${fmtFull(v)}</div>
-      </div>`;
-    }).join('');
-}
-
-/* ───────────────── CHART ───────────────── */
-function updateSellerChart(data){
-  const s=[...data].slice(0,15);
+/* ================= SELLER ================= */
+function seller(){
+  const d=getData().slice(0,5);
 
   if(charts.seller) charts.seller.destroy();
 
-  charts.seller = new Chart(document.getElementById('sellerTargetChart'),{
+  charts.seller=new Chart(sellerTargetChart,{
     type:'bar',
     data:{
-      labels:s.map(x=>x.n),
-      datasets:[
-        {
-          label:'Max',
-          data:s.map(x=>x.lmx+x.hmx),
-          backgroundColor:'#1D4ED8'
-        },
-        {
-          label:'Min',
-          data:s.map(x=>x.lmn+(x.hmn||0)),
-          backgroundColor:'#1D4ED855'
-        }
-      ]
-    },
-    options:{
-      indexAxis:'y'
+      labels:d.map(x=>x.n),
+      datasets:[{
+        data:d.map(x=>x.lmx),
+        backgroundColor:"#1D4ED8"
+      }]
     }
   });
 }
 
-/* ───────────────── TABLE ───────────────── */
-function updateBranchTable(data){
-  const m=getBranchSummary(data);
-
-  document.getElementById('branch-tbody').innerHTML =
-    Object.keys(m).map(b=>`
-      <tr>
-        <td>สาขา ${b}</td>
-        <td>${m[b].sellers}</td>
-        <td>${fmtFull(m[b].tc)}</td>
-        <td>${fmtFull(m[b].tg)}</td>
-        <td>${fmtFull(m[b].comMax)}</td>
-        <td>${fmtFull(m[b].comMin)}</td>
-      </tr>
-    `).join('');
+/* ================= MAIN ================= */
+function update(){
+  donut();
+  top();
+  branch();
+  seller();
 }
 
-/* ───────────────── FIXED COM ───────────────── */
-function updateBranchCom(data){
-  const m=getBranchSummary(data);
-
-  const keys=Object.keys(m);
-
-  if(charts.branchCom) charts.branchCom.destroy();
-
-  charts.branchCom = new Chart(
-    document.getElementById('branchComChart'),
-    {
-      type:'bar',
-      data:{
-        labels:keys.map(b=>'สาขา '+b),
-        datasets:[
-          {
-            label:'Max',
-            data:keys.map(b=>m[b].comMax),
-            backgroundColor:'#1D4ED8'
-          },
-          {
-            label:'Min',
-            data:keys.map(b=>m[b].comMin),
-            backgroundColor:'#1D4ED855'
-          }
-        ]
-      }
-    }
-  );
-}
-
-/* ───────────────── MAIN ───────────────── */
-function updateAll(){
-  const d=getFiltered();
-  updateKPI(d);
-  updateDonut(d);
-  updateTopSellers(d);
-  updateSellerChart(d);
-  updateBranchTable(d);
-  updateBranchCom(d);
-}
-
-/* 🚀 START */
-updateAll();
+update();
 
 </script>
+
 </body>
 </html>
