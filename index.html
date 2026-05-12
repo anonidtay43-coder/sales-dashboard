@@ -47,8 +47,12 @@
   }
 
   /* ── Layout ── */
-  .main { padding: 1.5rem 2rem 2.5rem; max-width: 1400px; margin: 0 auto; }
-
+  .main {
+  padding: 1rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
   /* ── Filter bar ── */
   .filter-bar {
     display: flex; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center;
@@ -102,16 +106,18 @@
   .kpi-unit { font-size: .72rem; color: #94A3B8; margin-top: .3rem; }
 
   /* ── Chart grid ── */
-  .chart-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr 1fr;
-    gap: 1rem; margin-bottom: 1rem;
-  }
-  .chart-grid-2 {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 1rem; margin-bottom: 1rem;
-  }
+ .chart-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+ .chart-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
   .card {
     background: var(--white); border-radius: 12px;
     padding: 1.1rem 1.25rem;
@@ -247,6 +253,13 @@
     width: 48px;
     font-size: .65rem;
   }
+}
+  body {
+  overflow-x: hidden;
+}
+
+canvas {
+  max-width: 100% !important;
 }
 </style>
 </head>
