@@ -430,8 +430,7 @@ function updateKPI(data) {
   document.getElementById('k-cust').textContent =
     fmtFull(data.reduce((s,r)=>s+r.tc,0));
 
-  document.getElementById('k-target-cust').textContent =
-    fmtFull(data.reduce((s,r)=>s+r.tg,0));
+  document.getElementById('k-target-cust').textContent = '913';
 
   const tmax =
     data.reduce((s,r)=>s+r.lmx+r.hmx,0);
