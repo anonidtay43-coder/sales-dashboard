@@ -176,11 +176,78 @@
     letter-spacing: .08em; color: #94A3B8; margin: 1.2rem 0 .6rem;
   }
 
-  @media (max-width: 1100px) {
-    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-    .chart-grid { grid-template-columns: 1fr; }
-    .chart-grid-2 { grid-template-columns: 1fr; }
+ @media (max-width: 768px) {
+
+  .header {
+    padding: 0 1rem;
+    height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
+
+  .header-title {
+    font-size: .9rem;
+  }
+
+  .header-sub {
+    font-size: .7rem;
+    line-height: 1.4;
+  }
+
+  .main {
+    padding: 1rem;
+  }
+
+  .filter-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+  }
+
+  .filter-btn {
+    flex-shrink: 0;
+  }
+
+  .kpi-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: .8rem;
+    padding-bottom: .5rem;
+  }
+
+  .kpi-card {
+    min-width: 180px;
+  }
+
+  .chart-wrap {
+    height: 260px;
+  }
+
+  .chart-wrap.tall {
+    height: 320px;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  table {
+    min-width: 700px;
+  }
+
+  .seller-name {
+    width: 55px;
+    font-size: .72rem;
+  }
+
+  .seller-val {
+    width: 48px;
+    font-size: .65rem;
+  }
+}
 </style>
 </head>
 <body>
