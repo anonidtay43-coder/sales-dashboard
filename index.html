@@ -468,63 +468,63 @@ function getBranchSummary(data) {
 }
 
 function updateDonut(data) {
-  const bmap = getBranchSummary(data);
-  const labels = Object.keys(bmap).map(b => `สาขา ${b}`);
-  const vals = Object.keys(bmap).map(b => bmap[b].tc);
-  const colors = Object.keys(bmap).map(b => BRANCH_COLORS[b]);
-  const total = vals.reduce((a,b)=>a+b,0);
+
+  const labels = [
+    'ตั้งเป้าเกิน 1 แสน',
+    'ตั้งเป้า 5 หมื่น - 1 แสน'
+  ];
+
+  const vals = [407, 505];
+
+  const colors = ['#1D4ED8', '#0F766E'];
+
+  const total = 913;
 
   if (charts.donut) charts.donut.destroy();
+
   charts.donut = new Chart(document.getElementById('donutChart'), {
     type: 'doughnut',
-    data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: colors,
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
     options: {
-      cutout: '62%', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: {
-        callbacks: { label: ctx => ` ${ctx.label}: ${fmtFull(ctx.raw)} ราย (${(ctx.raw/total*100).toFixed(1)}%)` }
-      }}
+      cutout: '62%',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx =>
+              ` ${ctx.label}: ${fmtFull(ctx.raw)} ราย (${(ctx.raw/total*100).toFixed(1)}%)`
+          }
+        }
+      }
     }
   });
 
   const leg = document.getElementById('donut-legend');
-  leg.innerHTML = Object.keys(bmap).map(b => `
+
+  leg.innerHTML = `
     <div class="legend-item">
-      <div class="legend-dot" style="background:${BRANCH_COLORS[b]}"></div>
-      <div class="legend-label">สาขา ${b}</div>
-      <div class="legend-val">${fmtFull(bmap[b].tc)}</div>
-    </div>`).join('');
+      <div class="legend-dot" style="background:#1D4ED8"></div>
+      <div class="legend-label">ตั้งเป้าเกิน 1 แสน</div>
+      <div class="legend-val">407 ราย</div>
+    </div>
+
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#0F766E"></div>
+      <div class="legend-label">ตั้งเป้า 5 หมื่น - 1 แสน</div>
+      <div class="legend-val">505 ราย</div>
+    </div>
+  `;
 }
-
-function updateBranchCom(data) {
-  const bmap = getBranchSummary(data);
-  const labels = Object.keys(bmap).map(b => `สาขา ${b}`);
-  const maxVals = Object.keys(bmap).map(b => bmap[b].comMax);
-  const minVals = Object.keys(bmap).map(b => bmap[b].comMin);
-  const colors = Object.keys(bmap).map(b => BRANCH_COLORS[b]);
-
-  if (charts.branchCom) charts.branchCom.destroy();
-  charts.branchCom = new Chart(document.getElementById('branchComChart'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'ค่าคอม (มากสุด)', data: maxVals, backgroundColor: colors, borderRadius: 5 },
-        { label: 'ค่าคอม (น้อยสุด)', data: minVals, backgroundColor: colors.map(c => c+'55'), borderRadius: 5 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { font: { family: 'Sarabun', size: 11 }, boxWidth: 12 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtFull(ctx.raw)} บาท` } }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { family: 'Sarabun', size: 11 } } },
-        y: { grid: { color: '#F1F5F9' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, callback: v => fmt(v) } }
-      }
-    }
-  });
-}
-
 function updateTopSellers(data) {
   const sorted = [...data].sort((a,b) => (b.lcx+b.hcx) - (a.lcx+a.hcx)).slice(0,10);
   const maxCom = sorted[0] ? sorted[0].lcx + sorted[0].hcx : 1;
