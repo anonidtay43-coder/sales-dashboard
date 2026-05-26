@@ -230,11 +230,15 @@
   </a>
 </div>
 
-<!-- Setup Notice -->
-<div id="sheet-notice" style="display:none;background:#FEF3C7;border-bottom:2px solid #F59E0B;padding:8px 1.5rem;font-size:.8rem;color:#92400E;align-items:center;gap:8px;">
-  <span>⚙️</span>
-  <span>ยังไม่ได้ตั้งค่า Google Sheets URL — แก้ <code style="background:#FDE68A;padding:1px 6px;border-radius:4px;font-size:.78rem;">SHEET_URL</code> ในไฟล์ให้เป็นลิงก์ชีทของคุณ</span>
+<!-- Loading Bar -->
+<div id="loading-bar" style="background:#EFF6FF;border-bottom:2px solid #1D4ED8;padding:8px 1.5rem;font-size:.8rem;color:#1D4ED8;display:flex;align-items:center;gap:10px;">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite;flex-shrink:0">
+    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+  </svg>
+  <span>กำลังโหลดข้อมูลจาก Google Sheets...</span>
+  <span id="last-updated" style="margin-left:auto;color:#94A3B8;font-size:.75rem;"></span>
 </div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <div class="main">
 
@@ -344,13 +348,80 @@
 </div>
 
 <script>
-// ⚙️ แก้ SHEET_URL ตรงนี้จุดเดียว — ใส่ลิงก์ Google Sheets ของคุณ
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1Hd8GeAGDL1w8D7WHJFHx4Y532W_aBRBJSSf35O7maE8/edit?gid=106493598#gid=106493598";
+// ⚙️ Apps Script URL — ตัวกลางดึงข้อมูลจาก Google Sheets (ไม่มีปัญหา CORS)
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlxgllJz3Twn1cC4NhcwEuRwC6ygVkhaetRdA6xDIIhWrAyx6U9-ePPwIUi67kdKH49Q/exec";
+const SHEET_ID  = "1Hd8GeAGDL1w8D7WHJFHx4Y532W_aBRBJSSf35O7maE8";
+const SHEET_GID = "1310728965";
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${SHEET_GID}`;
 
-// row = หมายเลขแถวใน Google Sheets (นับจาก 1, แถว 1 = header)
-const RAW = [
-  // lmn=เป้า A (ยอดขายสูงสุด2เดือน)  lcn=คอม A  lmx=เป้า A+ (สูงสุด2เดือน+5%)  lcx=คอม A+
-  // hi=จำนวนลูกค้ารายเล็ก  hmx=รวมเป้าลูกค้ารายเล็ก  hcx=ค่าคอมลูกค้ารายเล็ก
+// ลิงก์ตรงไปแต่ละแถวใน Sheets
+function sheetUrl(row) {
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${SHEET_GID}#gid=${SHEET_GID}&range=A${row}`;
+}
+
+// — ตัวแปร global —
+let RAW = [];
+let currentBranch = 'all';
+let charts = {};
+
+function n(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  return parseFloat(String(v).replace(/,/g,'')) || 0;
+}
+
+// — แปลง rows จาก Apps Script JSON → RAW format —
+function rowsToRAW(rows) {
+  const result = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const branch = parseInt(r[0]);
+    const name   = String(r[1] || '').trim();
+    if (!name || isNaN(branch) || name === 'รวม') continue;
+    result.push({
+      b:   branch,
+      n:   name,
+      row: i + 1,
+      tc:  n(r[2]),
+      tg:  n(r[3]),
+      lo:  n(r[4]),
+      lmn: n(r[5]),
+      lcn: n(r[6]),
+      lmx: n(r[7]),
+      lcx: n(r[8]),
+      hi:  n(r[9]),
+      hmx: n(r[10]),
+      hcx: n(r[11]),
+    });
+  }
+  return result;
+}
+
+// — โหลดข้อมูลจาก Apps Script —
+async function loadFromSheets() {
+  const loadEl = document.getElementById('loading-bar');
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    RAW = rowsToRAW(rows);
+    if (RAW.length === 0) throw new Error('ไม่พบข้อมูลในชีท');
+    if (loadEl) loadEl.style.display = 'none';
+    const btn = document.getElementById('raw-data-btn');
+    if (btn) btn.href = SHEET_URL;
+    updateAll();
+    const ts = document.getElementById('last-updated');
+    if (ts) ts.textContent = 'อัพเดทล่าสุด: ' + new Date().toLocaleTimeString('th-TH');
+  } catch(e) {
+    if (loadEl) {
+      loadEl.innerHTML = `<span style="color:#B91C1C">⚠️ โหลดข้อมูลไม่สำเร็จ: ${e.message}</span>
+        <small style="color:#64748B;margin-left:8px;">ตรวจสอบว่า Apps Script Deploy แล้ว และตั้ง Access: Anyone</small>`;
+    }
+    console.error('Sheets load error:', e);
+  }
+}
+
+// — Fallback RAW (ข้อมูล hardcode ไว้กันพลาด) —
+const RAW_FALLBACK = [
   {b:5,  n:"ขวัญ5",    row:2,  tc:89,  tg:13, lo:3,  lmn:400000,  lcn:300,  lmx:320000,  lcx:300,  hi:10, hmx:600000,  hcx:500},
   {b:5,  n:"จอย5",     row:3,  tc:157, tg:28, lo:28, lmn:4780000, lcn:4000, lmx:4900000, lcx:5850, hi:0,  hmx:0,       hcx:0},
   {b:5,  n:"เจน5",     row:4,  tc:158, tg:17, lo:17, lmn:3030000, lcn:2500, lmx:3090000, lcx:3600, hi:0,  hmx:0,       hcx:0},
@@ -390,13 +461,8 @@ const RAW = [
 const BRANCH_COLORS = {5:"#1D4ED8",9:"#0F766E",10:"#15803D",11:"#6D28D9",12:"#B45309",13:"#B91C1C",21:"#0F1E3C"};
 const BRANCH_LIGHT  = {5:"#DBEAFE",9:"#CCFBF1",10:"#DCFCE7",11:"#EDE9FE",12:"#FEF3C7",13:"#FEE2E2",21:"#CBD5E1"};
 
-function sheetUrl(row) {
-  if (SHEET_URL.includes("YOUR_SHEET_ID")) return null;
-  return `${SHEET_URL}&range=A${row}`;
-}
 function sellerLink(r) {
   const url = sheetUrl(r.row);
-  if (!url) return `<span style="font-weight:700;color:var(--navy)" title="ยังไม่ได้ตั้งค่า SHEET_URL">${r.n}</span>`;
   return `<a href="${url}" target="_blank" rel="noopener"
     style="font-weight:700;color:var(--navy);text-decoration:none;
            border-bottom:1.5px dashed #CBD5E1;padding-bottom:1px;
@@ -405,9 +471,6 @@ function sellerLink(r) {
     onmouseout="this.style.color='var(--navy)';this.style.borderColor='#CBD5E1'"
     title="ดูข้อมูลใน Google Sheets ↗">${r.n} <span style="font-size:.65rem;opacity:.6">↗</span></a>`;
 }
-
-let currentBranch = 'all';
-let charts = {};
 
 function fmt(n) { return n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(0)+'K' : n.toLocaleString('th-TH'); }
 function fmtFull(n) { return n.toLocaleString('th-TH'); }
@@ -635,7 +698,7 @@ function updateBranchTable(data) {
     ? `<th>เซล</th>
        <th>ลูกค้า ToCRM</th>
        <th>≥100K (คน)</th>
-       <th>50K–90K (คน)</th>
+       <th>50K–100K (คน)</th>
        <th>ค่าคอม A+</th>
        <th>ค่าคอม A</th>
        <th>คอมรายย่อย</th>`
@@ -710,16 +773,21 @@ function updateAll() {
   updateBranchTable(data);
 }
 
-updateAll();
+// โหลดจาก Sheets ตอน page load
+loadFromSheets().catch(() => {
+  // ถ้า fetch ไม่ได้ (เช่น ยังไม่ Publish) ใช้ข้อมูล fallback
+  RAW = RAW_FALLBACK;
+  document.getElementById('loading-bar').innerHTML =
+    '⚠️ ใช้ข้อมูล fallback (ไม่สามารถโหลดจาก Sheets ได้) — กรุณา Publish ชีทก่อน';
+  updateAll();
+});
 
-// แสดง notice ถ้ายังไม่ตั้งค่า SHEET_URL
-if (SHEET_URL.includes("YOUR_SHEET_ID")) {
-  const n = document.getElementById('sheet-notice');
-  if (n) n.style.display = 'flex';
-} else {
-  const btn = document.getElementById('raw-data-btn');
-  if (btn) btn.href = SHEET_URL;
-}
+// อัพเดทอัตโนมัติทุก 5 นาที
+setInterval(() => loadFromSheets(), 5 * 60 * 1000);
+
+// อัพเดทปุ่ม Raw Data
+const btn = document.getElementById('raw-data-btn');
+if (btn) btn.href = SHEET_URL;
 </script>
 </body>
 </html>
